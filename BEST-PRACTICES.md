@@ -1,6 +1,6 @@
 # Best practices: coding with AI agents
 
-The current playbook. Each practice is tagged with the [log](LOG.md) date it came from.
+The current playbook: how we *build*. For how we *review*, see [REVIEW-GUIDE.md](REVIEW-GUIDE.md). Each practice is tagged with the [log](LOG.md) date it came from.
 Format: **the practice** — why it matters — *how to check*.
 
 ---
