@@ -4,6 +4,12 @@ Newest first. Each entry: context, what happened, lessons (linked to [BEST-PRACT
 
 ---
 
+## 2026-11-21 (evening) — Portable review skill
+
+Saved the `project-review` skill to [`skills/project-review/`](skills/project-review/) in two forms: `SKILL.md` (the Claude version, copied from the saved skill) and `PORTABLE.md` (a paste-ready block for other AI tools, with raw links to the latest guide). **Lesson:** keep tool-specific wrappers thin and point them at one shared source (`REVIEW-GUIDE.md`), so switching AI tools never forks the knowledge.
+
+---
+
 ## 2026-11-21 (evening) — A review guide for future reviews
 
 **Context.** The playbook says how to build. Reviews need something different: a list of the pitfalls AI-written code and agent setups commonly hit, each with a concrete check, that a reviewing agent reads *before* looking at a project.

@@ -9,6 +9,7 @@ A running notebook of what works (and what doesn't) when building software with 
 | [`REVIEW-GUIDE.md`](REVIEW-GUIDE.md) | What a reviewer (agent or person) reads before looking at any project: a procedure, a catalog of common pitfalls with checks, and a report format. | Add an item when a review finds something new and real; remove items that stop being true. |
 | [`BEST-PRACTICES.md`](BEST-PRACTICES.md) | The current playbook, organized by topic. Each practice says what to do, why, and how to check it. | Edited in place. When a practice changes, rewrite it and note why in the log. |
 | [`LOG.md`](LOG.md) | Dated entries: what happened in a session, what was learned, links to the evidence. | Append only. Newest entry at the top. |
+| [`skills/`](skills/) | Reusable instructions for AI tools, e.g. [`project-review`](skills/project-review/), which makes any review load the guide first. Each comes as `SKILL.md` (Claude) and `PORTABLE.md` (paste into any other tool). | Update both files together. |
 
 ## Adding to it
 1. Add a dated entry to the top of `LOG.md`: context, what happened, lessons, links.
