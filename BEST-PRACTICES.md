@@ -71,6 +71,26 @@ Keep agents, workflows, labels and dashboards in a kit with an install script th
 **Verified** = ran it on this code revision and saw it pass (link the run). **Partial** = some paths proven. **Proposed** = not built or not accepted. Never "should work."
 *Check:* every "verified" in a PR links to a command output or run.
 
+### 1.16 Separate the thinking from the writing `2026-11-22`
+Run the AI in a job that can only read. Hand its output (a JSON answer, or a patch file) to a separate plain step with no AI. That step validates the output and does any GitHub writes. A prompt-injected or confused model then has nothing to push with.
+*Check:* every AI job has read-only permissions and a checkout without saved credentials; writes live in their own job.
+
+### 1.17 Make the AI engine a setting, not a rewrite `2026-11-22`
+Keep roles, rules and answer formats in plain text with nothing vendor-specific. Every engine writes its answer to the same file, which is checked against a JSON schema, so switching vendors is a one-word config change. Don't depend on one vendor's structured-output feature; use it only as a fallback.
+*Check:* adding an engine means adding one step per agent, not editing the roles.
+
+### 1.18 A broken run must never look like success `2026-11-22`
+If the AI crashes, times out or returns something invalid, the result becomes **hold / blocked / needs a decision**, with the reason attached. Never default to "done."
+*Check:* a test where the stand-in AI edits files but never reports must end as "blocked."
+
+### 1.19 The reviewer checks for itself `2026-11-22`
+Don't let the reviewer trust the builder's "tests pass." The review job runs the project's checks on the PR itself and gives the results to the reviewing AI. (This also covers a GitHub gotcha: PRs opened by a workflow's own token don't trigger other workflows, so CI might never run.)
+*Check:* the review comment cites results the reviewer produced.
+
+### 1.20 When the environment refuses an action, hand it to the owner `2026-11-22`
+If an agent's environment blocks something (pushing tags, changing repo settings), don't route around the block with another tool. List it as a clear owner step with the exact command or click path.
+*Check:* the final report has an "owner steps" list instead of creative workarounds.
+
 ---
 
 ## 2. Agent briefing and docs
@@ -94,6 +114,10 @@ For example, a checklist section in the milestone doc. Done items stay ticked wi
 ### 2.5 Don't record a decision as accepted until it is `2026-11-21`
 Proposals go under a section marked "proposed." The ADR changes only after approval.
 *Check:* the ADR has no entries the owner hasn't approved.
+
+### 2.6 One source of truth; generate the variants `2026-11-22`
+When the same content must exist in several formats (neutral roles plus a Claude plugin, say), write it once and generate the rest with a script. CI fails if the generated copies drift.
+*Check:* the generated files say "generated, don't edit" and a drift check runs in CI.
 
 ---
 
@@ -135,6 +159,10 @@ On a free plan, private repos can't protect `main`. Then rules like "agents neve
 Sections: **What changed** · **Evidence** (commands and results) · **Not verified** · **After merge** (the checks to do once it lands).
 *Check:* a reviewer can tell what is proven and what isn't without asking.
 
+### 3.9 Share private automation as composite actions, versioned by a moving major tag `2026-11-22`
+A private shared repo can serve actions to your other private repos once you set Settings → Actions → General → Access → "Accessible from repositories owned by user." Prefer **composite actions** over reusable workflows when the action needs the shared repo's files (prompts, scripts), because a composite action's whole repo is available at `github.action_path`. Projects call `@v0`. Cut `v1` only after a real end-to-end run works.
+*Check:* projects pin to a major tag; the shared repo's CI runs before each tag move.
+
 ---
 
 ## 4. Coding practices
@@ -151,3 +179,28 @@ The dashboard was exercised in a headless browser with live GitHub API responses
 
 ### 4.4 Validate what you can; name what you couldn't `2026-11-21`
 Parse every YAML file, syntax-check every shell step (`bash -n`), and run the logic locally. Then list what is still unverified (e.g. "needs one live run in GitHub Actions").
+
+### 4.5 Read the dependency's source at the version you pin `2026-11-22`
+Docs leave gaps; source doesn't. Reading three AI GitHub actions at their pinned versions showed:
+- passing a token skips the vendor's app sign-in entirely;
+- runs started by a bot are silently refused unless bots are explicitly allowed;
+- one action auto-approves every tool and drops its own files into the workspace;
+- a "strict" JSON-schema mode may reject keywords like `maxLength`.
+
+*Check:* for each new third-party action, note its inputs, outputs and any permission or actor checks.
+
+### 4.6 Rehearse automation locally with stand-ins `2026-11-22`
+Run the real workflow shell logic with a stand-in AI and a fake `gh` that serves canned responses and records every call. That makes "did it label the issue, push the branch, dispatch the reviewer?" testable in seconds, with no API costs.
+*Check:* a simulator scenario exists for each happy path and each failure path.
+
+### 4.7 Break the code on purpose to test the tests `2026-11-22`
+After tests pass, introduce the bug each test claims to catch. One test here kept passing because a second safety net hid the broken one, so the scenario was rewritten.
+*Check:* each important test has been seen failing at least once.
+
+### 4.8 Turn review rules into CI tests `2026-11-22`
+Rules that matter become tests, so they can't be forgotten: "every third-party action pinned to a SHA," "AI jobs never get write permissions," "generated files in sync."
+*Check:* each guide item marked as a must-hold rule has a test.
+
+### 4.9 Run your own review guide on your own work before shipping `2026-11-22`
+The guide found two real trust-boundary issues in freshly built tooling (`C2`, `D2` in REVIEW-GUIDE.md). Both were documented before release.
+*Check:* the PR or release notes list which guide items were checked.

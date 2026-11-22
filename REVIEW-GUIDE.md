@@ -52,6 +52,7 @@ Tags: **[field]** = documented widely by others (sources at the end). **[ours]**
 - **B7 · Loose dependency pins and lockfile drift.** [field] *Check:* is a lockfile committed, and does it change in step with the manifest?
 - **B8 · Plausible but untested edge cases.** [field] The happy path works; empty input, pagination limits, time zones, retries and rate limits don't. *Check:* name 3 edge cases and look for a test of each.
 - **B9 · Over-engineering.** [field/ours] Abstraction layers, defensive code and tests for cases that can't happen, or infrastructure built before the need exists. *Check:* for each new layer, ask what concrete problem it solves today. (`C1`)
+- **B10 · Tests that pass for the wrong reason.** [ours] A second safety net can hide the one a test claims to check. *Check:* break the code under test on purpose; the test must fail. (§4.7)
 
 ### C. Agent architecture
 
@@ -66,6 +67,8 @@ Tags: **[field]** = documented widely by others (sources at the end). **[ours]**
 - **C9 · Instructions too long to follow.** [field] A bloated `CLAUDE.md`/`AGENTS.md` gets half-ignored. Rules that must always hold belong in hooks or CI, not prose. *Check:* line count, duplicated or obvious rules, and whether each must-hold rule has an enforcement point. (§2.1)
 - **C10 · Decisions parsed from prose.** [ours] *Check:* workflows act on structured output (JSON against a schema) with an explicit "hold" option, not on grep of free text. (§1.9)
 - **C11 · State lives in chat.** [ours] *Check:* can a fresh session find the current task, owner and next step from the repo alone (issues, PRs, handoff doc)? (§1.6)
+- **C12 · AI steps holding write credentials.** [ours] Some agent actions set up git with whatever token they're given, so the AI could push. *Check:* AI jobs have read-only permissions and `persist-credentials: false`; writes happen in a separate job with no AI. (§1.16)
+- **C13 · Locked to one vendor's output feature.** [ours] *Check:* results go through a neutral contract (an output file checked against a schema) with a fail-safe. Schema keywords are portable: some strict modes reject `maxLength` and similar. (§1.17, §1.18)
 
 ### D. GitHub Actions security
 
@@ -76,6 +79,8 @@ Tags: **[field]** = documented widely by others (sources at the end). **[ours]**
 - **D5 · Secrets exposure.** [field] *Check:* secrets aren't echoed, passed as command-line arguments or written to artifacts. Prefer OIDC over long-lived keys. Pass secrets only to the steps that need them.
 - **D6 · `GITHUB_ENV` / `GITHUB_OUTPUT` injection.** [field] Writing untrusted text there can set variables for later steps. *Check:* grep for `>> $GITHUB_ENV` or `>> $GITHUB_OUTPUT` fed by event data.
 - **D7 · Token-made events don't chain.** [ours] A PR or label created with `GITHUB_TOKEN` won't trigger other `pull_request` workflows (`workflow_dispatch` does work). *Check:* any automation that expects a follow-on workflow to fire.
+- **D8 · Bot-started runs silently skipped.** [ours] AI actions often refuse runs started by `github-actions[bot]` (e.g. one workflow dispatching another) unless bots are explicitly allowed. *Check:* every workflow started by another workflow has the vendor's allow-bots setting.
+- **D9 · Shell and artifact gotchas.** [ours] Under `bash -e`, a step whose last line is `[ cond ] && cmd` fails when `cond` is false. `upload-artifact` v4+ skips hidden files (e.g. `.crew/`) by default. *Check:* use `if …; then …; fi` for the last line; copy outputs to `$RUNNER_TEMP` or set `include-hidden-files`.
 
 ### E. Data and integrations
 

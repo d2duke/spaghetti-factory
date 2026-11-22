@@ -4,6 +4,39 @@ Newest first. Each entry: context, what happened, lessons (linked to [BEST-PRACT
 
 ---
 
+## 2026-11-22: A reusable, engine-neutral agent crew
+
+**Context.** Yesterday's prototype kit worked only with one AI vendor and was copied into each project. The goal: one private shared repo that every project calls, where any agent can run on Claude, Codex or Gemini, plus a Claude-specific version.
+
+**What we built.**
+- A shared repo holding three plain-text roles (planner, builder, reviewer), a run contract and JSON answer schemas.
+- Composite GitHub Actions: AI runs in read-only jobs; separate steps with no AI do every GitHub write.
+- Per-project engine choice in one config file.
+- A Claude Code plugin generated from the same roles.
+- A dashboard showing which engine runs each agent.
+- 18 unit tests and 7 end-to-end simulations with stand-in AIs and a fake GitHub CLI. CI adds actionlint and shellcheck.
+- **Not yet run live with a real AI.**
+
+**What happened along the way.**
+- The project's earlier cleanup PR merged, and the follow-up check passed: the data job reused the previous run's snapshot and no bot commit followed.
+- Reading the three vendor actions at their pinned versions changed the design (→ 4.5).
+- Mutation testing exposed a test that passed for the wrong reason (→ 4.7, `B10`).
+- Running the review guide on the new tooling found two trust-boundary issues, documented before release (→ 4.9).
+- The agent's environment refused tag pushes and repo-settings changes, so they became owner steps (→ 1.20).
+
+**Lessons.** 1.16–1.20, 2.6, 3.9, 4.5–4.9; review guide `B10`, `C12`, `C13`, `D8`, `D9`. The biggest:
+1. **Separate thinking from writing.** The AI only reads; a plain step writes. (1.16)
+2. **Make the engine a setting.** One neutral contract, thin vendor adapters. (1.17)
+3. **Failure must never look like success.** (1.18)
+4. **Read the source, rehearse locally, then break it on purpose.** (4.5–4.7)
+
+**Open threads.**
+- Owner steps: allow cross-repo access to the shared repo's actions, and push the `v0.1.0` and `v0` tags.
+- First live loop with a real AI, then log what breaks and cut `v1`.
+- Rewrite the project's install handoff to use the shared repo instead of the zip kit.
+
+---
+
 ## 2026-11-21 (evening) — Portable review skill
 
 Saved the `project-review` skill to [`skills/project-review/`](skills/project-review/) in two forms: `SKILL.md` (the Claude version, copied from the saved skill) and `PORTABLE.md` (a paste-ready block for other AI tools, with raw links to the latest guide). **Lesson:** keep tool-specific wrappers thin and point them at one shared source (`REVIEW-GUIDE.md`), so switching AI tools never forks the knowledge.
