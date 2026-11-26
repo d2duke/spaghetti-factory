@@ -1,6 +1,12 @@
 # 🍝 Spaghetti Factory
 
-A running notebook of what works (and what doesn't) when building software with AI coding agents.
+A shared engineering learning library: a running notebook of what works (and what doesn't) when building software with AI coding agents.
+
+## Shared use across projects
+
+Use this library as advisory engineering guidance for planning, implementation and independent review, regardless of project or AI engine. Project operating instructions, security boundaries, approved task scope and human approval gates take precedence. Automated consumers should use an explicitly reviewed, versioned snapshot rather than treating mutable external text as instructions. Record the revision used when practical.
+
+Feed back reusable, evidence-backed lessons through reviewed changes to this library. This is a public repository: generalize private work, omit identifying details, private links, credentials and raw logs. Never automatically publish project data or let the library authorize new access, actions or spending.
 
 **Reviewing a project? Start with [`REVIEW-GUIDE.md`](REVIEW-GUIDE.md).**
 

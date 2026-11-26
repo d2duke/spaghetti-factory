@@ -4,6 +4,25 @@ Newest first. Each entry: context, what happened, lessons (linked to [BEST-PRACT
 
 ---
 
+## 2026-11-26: From simulated checks to live agent execution
+
+**Context.** A reusable AI engineering crew was exercised in consumer projects and then installed to work on its own repository. The aim was to prove real agent handoffs without weakening independent verification or human approvals.
+
+**What happened.**
+- A bounded repair exercise demonstrated a reviewer requesting a correction, a builder repairing the same PR, and a second reviewer run inspecting the repaired revision. The test PR was not merged.
+- Offline tests and integration CI passed, but the first self-hosted planner workflow failed in a separate publication job. The planning job had run successfully and correctly returned a structured hold after detecting overlapping work. The publisher failed while fetching a private action archive. The successful job had repository contents read access; the failing job did not. A minimal read-only correction passed offline CI; live recovery was not yet established at the time of this observation.
+- Security review exposed gaps in trusting a builder-reported starting revision and in binding verification and handoffs to the intended commit. Corrections and negative-path tests were prepared before installation. A documentation-only pilot restricts the actual changed paths and preserves trusted verification policy; offline validation is not a live security proof.
+- Repository protection could be configured but was initially unenforced because of account-plan limits. The owner resolved the entitlement issue and checked the actual protection state.
+- An installation helper assumed a JSON command-line utility was installed. Its absence stopped setup; direct CLI commands recovered the missing labels, and the resulting label list verified the outcome.
+
+**Lessons.** Verify the live environment and each job's required access, not just syntax or simulated logic. Separate a valid agent hold from a failed publication. Bind checks and verdicts to an independently authorized commit. Protect self-hosted verification infrastructure. Check setup dependencies and actual enforcement of account-level rules. Use a fresh reviewer, not a second pass by the author, for independent code review. See practices 1.4, 1.15, 1.18, 3.6, 3.7, 4.10–4.12 and review checks A7, C14, D10–D11.
+
+**Evidence and limits.** These are generalized observations from private engineering work: actual workflow job conclusions, archive-download failure, successful planning output, test results, repository protection state and CLI output were inspected. Private source links and logs remain in the originating project, not in this public notebook. The archive permission diagnosis remains a hypothesis until a live retry succeeds. No claim of a completed self-hosted loop is made.
+
+**Decision.** Adopt this repository as a shared learning library across projects; apply its guidance through reviewed versions and never publish private project evidence automatically.
+
+---
+
 ## 2026-11-22: A reusable, engine-neutral agent crew
 
 **Context.** Yesterday's prototype kit worked only with one AI vendor and was copied into each project. The goal: one private shared repo that every project calls, where any agent can run on Claude, Codex or Gemini, plus a Claude-specific version.
