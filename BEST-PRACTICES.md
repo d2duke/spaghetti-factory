@@ -20,7 +20,7 @@ Planner and reviewer get read-only tools (`Read, Glob, Grep`). Only the builder 
 *Check:* list the tools in each agent file. A reviewer with `Edit` is a bug.
 
 ### 1.4 The builder never reviews its own work `2026-11-21`
-A separate reviewer that didn't write the code catches what the builder rationalized. Feed the reviewer the task contract, the diff and the CI results.
+A separate reviewer that didn't write the code catches what the builder rationalized. A second pass in the author's context is useful but is not independent code review; independently executed CI is a separate kind of evidence. `2026-11-26` Feed the reviewer the task contract, the diff and the CI results.
 *Check:* different agent definitions for build and review.
 
 ### 1.5 Humans hold the gates `2026-11-21`
@@ -68,7 +68,7 @@ Keep agents, workflows, labels and dashboards in a kit with an install script th
 *Check:* a new repo gets the crew in under 10 minutes.
 
 ### 1.15 Status words mean evidence `2026-11-21`
-**Verified** = ran it on this code revision and saw it pass (link the run). **Partial** = some paths proven. **Proposed** = not built or not accepted. Never "should work."
+**Verified** = ran it on this code revision and saw it pass (link the run). **Partial** = some paths proven. **Proposed** = not built or not accepted. Never "should work." Distinguish offline simulation, integration CI, and live execution in the actual environment. `2026-11-26`
 *Check:* every "verified" in a PR links to a command output or run.
 
 ### 1.16 Separate the thinking from the writing `2026-11-22`
@@ -80,7 +80,7 @@ Keep roles, rules and answer formats in plain text with nothing vendor-specific.
 *Check:* adding an engine means adding one step per agent, not editing the roles.
 
 ### 1.18 A broken run must never look like success `2026-11-22`
-If the AI crashes, times out or returns something invalid, the result becomes **hold / blocked / needs a decision**, with the reason attached. Never default to "done."
+If the AI crashes, times out or returns something invalid, the result becomes **hold / blocked / needs a decision**, with the reason attached. Never default to "done." A valid hold is a successful decision, not a model failure; report reasoning, publication and downstream execution separately. `2026-11-26`
 *Check:* a test where the stand-in AI edits files but never reports must end as "blocked."
 
 ### 1.19 The reviewer checks for itself `2026-11-22`
@@ -149,11 +149,11 @@ Bot commits after every merge made every branch "behind" instantly and cluttered
 *Check:* `git log main --author=github-actions` stays empty going forward.
 
 ### 3.6 Least-privilege workflow permissions `2026-11-21`
-Default to `contents: read`. Grant `write` only to the step that needs it, and say why in a comment.
+Use explicit job-level least privilege. Grant `contents: read` where needed for repository checkout or access to private actions; grant `write` only to the job that needs it, and say why in a comment. A missing read scope can block a job before its first step; compare actual runner permissions with a successful job and verify the diagnosis live. `2026-11-26`
 *Check:* grep workflows for `write` and justify each one.
 
 ### 3.7 Know what your plan can't enforce `2026-11-21`
-On a free plan, private repos can't protect `main`. Then rules like "agents never push to main" live in `AGENTS.md` and the agent's own branch, so say that explicitly.
+Check the hosting plan and effective rules before relying on a configured security control. A private repository's ruleset can appear active yet be unenforced because of plan restrictions. Confirm actual enforcement, required checks and bypass actors before enabling privileged automation. If protection cannot be enforced, document the gap and hold activation where it is a requirement. `2026-11-26`
 
 ### 3.8 One coherent change per PR, with a standard body `2026-11-21`
 Sections: **What changed** · **Evidence** (commands and results) · **Not verified** · **After merge** (the checks to do once it lands).
@@ -204,3 +204,15 @@ Rules that matter become tests, so they can't be forgotten: "every third-party a
 ### 4.9 Run your own review guide on your own work before shipping `2026-11-22`
 The guide found two real trust-boundary issues in freshly built tooling (`C2`, `D2` in REVIEW-GUIDE.md). Both were documented before release.
 *Check:* the PR or release notes list which guide items were checked.
+
+### 4.10 Bind verification and handoffs to authorized commit identity `2026-11-26`
+Derive the intended revision from trusted workflow inputs, not the builder's report. Verify checkout identity before tests, pass the actual published SHA to the reviewer, and stamp the verdict with that SHA. A label is not proof that the current head was reviewed.
+*Check:* negative-path tests reject mismatched starting commits, failed checkouts and stale review targets; compare the final verdict SHA with the current PR head.
+
+### 4.11 Protect the verifier from self-modification `2026-11-26`
+When agents develop their own tooling, keep execution policy, verification scripts and privileged publishing logic outside the automated pilot's scope. Use an independently trusted base and enforce allowed paths on actual Git changes, not an agent-generated manifest. Start with a bounded low-risk task.
+*Check:* verify and publication gates reject out-of-scope edits, policy changes, renames and file-mode or symlink changes.
+
+### 4.12 Preflight installation dependencies and real environment `2026-11-26`
+Validate required commands, authentication, configuration, labels, credentials (presence only), plan entitlements and workflow permissions before activation. Provide an actionable error for missing dependencies; validate the resulting state after setup. Offline CI is necessary but does not replace a bounded live test.
+*Check:* run the installer in a clean supported environment and inspect every job's actual result during a controlled pilot.

@@ -41,6 +41,8 @@ Tags: **[field]** = documented widely by others (sources at the end). **[ours]**
 - **A5 · Stale branches and orphaned work.** [ours] Leftover branches confuse planners and people. *Check:* for each branch, compare ahead/behind against main, check whether its content is already in main (`git cherry`, file compare), and whether it has an open PR. (§3.2)
 - **A6 · Bots committing to main.** [ours] Generated reports committed after every merge leave every branch behind and clutter history. *Check:* `git log main --format='%an' | sort | uniq -c`. (§3.5)
 
+- **A7 · Offline checks mistaken for live readiness.** [ours] *Check:* identify the exact revision, environment and stage proven by each run; inspect every job conclusion and actual output in a bounded live pilot. A valid hold and a failed publisher are separate outcomes. (§1.15, §1.18, §4.12)
+
 ### B. AI-written code smells
 
 - **B1 · Tests bent to pass.** [field] Coding agents have been documented deleting or editing tests, special-casing test inputs, and exiting early with a success status. *Check:* `git diff <base> -- '*test*'`; look for removed assertions, new `skip`/`only`/`xfail`, loosened expectations, `if` branches keyed on literal fixture values, and literals in the code that match test expectations. *Fix:* restore the tests and solve the real problem.
@@ -70,6 +72,8 @@ Tags: **[field]** = documented widely by others (sources at the end). **[ours]**
 - **C12 · AI steps holding write credentials.** [ours] Some agent actions set up git with whatever token they're given, so the AI could push. *Check:* AI jobs have read-only permissions and `persist-credentials: false`; writes happen in a separate job with no AI. (§1.16)
 - **C13 · Locked to one vendor's output feature.** [ours] *Check:* results go through a neutral contract (an output file checked against a schema) with a fail-safe. Schema keywords are portable: some strict modes reject `maxLength` and similar. (§1.17, §1.18)
 
+- **C14 · Agents can alter their own verification boundary.** [ours] *Check:* independently trusted verification policy and actual staged/committed path enforcement reject unauthorized code, policy, rename, symlink and mode changes before publication. Keep sensitive infrastructure outside the first pilot. (§4.11)
+
 ### D. GitHub Actions security
 
 - **D1 · Script injection.** [field] `${{ github.event.* }}` (titles, bodies, branch names) pasted into `run:` becomes code before the shell sees it. *Check:* grep `run:` blocks for `${{ github.event`, `${{ inputs.` and `head_ref`. *Fix:* pass them through `env:` and quote them.
@@ -81,6 +85,9 @@ Tags: **[field]** = documented widely by others (sources at the end). **[ours]**
 - **D7 · Token-made events don't chain.** [ours] A PR or label created with `GITHUB_TOKEN` won't trigger other `pull_request` workflows (`workflow_dispatch` does work). *Check:* any automation that expects a follow-on workflow to fire.
 - **D8 · Bot-started runs silently skipped.** [ours] AI actions often refuse runs started by `github-actions[bot]` (e.g. one workflow dispatching another) unless bots are explicitly allowed. *Check:* every workflow started by another workflow has the vendor's allow-bots setting.
 - **D9 · Shell and artifact gotchas.** [ours] Under `bash -e`, a step whose last line is `[ cond ] && cmd` fails when `cond` is false. `upload-artifact` v4+ skips hidden files (e.g. `.crew/`) by default. *Check:* use `if …; then …; fi` for the last line; copy outputs to `$RUNNER_TEMP` or set `include-hidden-files`.
+
+- **D10 · Missing read scope or unenforced repository rules.** [ours] *Check:* compare job-level permissions with actual runner logs; confirm effective rules and account entitlement, not just configured status. Verify the correction live without adding write scopes. (§3.6, §3.7)
+- **D11 · Untrusted commit identity at a handoff.** [ours] *Check:* trusted workflow derives the authorized base, verifies checkout SHA before tests and binds published and reviewed SHAs; reject mismatches and stale verdicts in tests. (§4.10)
 
 ### E. Data and integrations
 
